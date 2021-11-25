@@ -11,5 +11,5 @@ user.cfg
 venv/
 env/
 crypto_trading.db
-apprise.yml
+#apprise.yml
 .DS_Store
