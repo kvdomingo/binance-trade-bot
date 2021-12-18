@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime as _datetime
 
-from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -28,7 +28,7 @@ class CoinValue(Base):
     usd_price = Column(Float)
     btc_price = Column(Float)
 
-    interval = Column(Enum(Interval))
+    interval = Column(String)
 
     datetime = Column(DateTime)
 
@@ -38,7 +38,7 @@ class CoinValue(Base):
         balance: float,
         usd_price: float,
         btc_price: float,
-        interval=Interval.MINUTELY,
+        interval=Interval.MINUTELY.value,
         datetime: _datetime = None,
     ):
         self.coin = coin

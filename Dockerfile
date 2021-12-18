@@ -1,17 +1,16 @@
-FROM --platform=$BUILDPLATFORM python:3.8 as builder
+FROM python:3.8-buster
 
 WORKDIR /install
 
-RUN apt-get update && apt-get install -y rustc
+RUN apt-get update && apt-get install libpq-dev
 
-COPY requirements.txt /requirements.txt
-RUN pip install --prefix=/install -r /requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
-FROM python:3.8-slim
+RUN python -m pip install -U pip setuptools
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 WORKDIR /app
 
-COPY --from=builder /install /usr/local
 COPY . .
 
 CMD ["python", "-m", "binance_trade_bot"]
