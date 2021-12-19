@@ -130,7 +130,7 @@ class MockBinanceManager(BinanceAPIManager):
 
 class MockDatabase(Database):
     def __init__(self, logger: Logger, config: Config):
-        super().__init__(logger, config, "postgresql://")
+        super().__init__(logger, config, "sqlite:///")
 
     def log_scout(self, pair: Pair, target_ratio: float, current_coin_price: float, other_coin_price: float):
         pass

@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from dotenv import load_dotenv
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from typing import List, Optional, Union
@@ -15,16 +14,9 @@ from .config import Config
 from .logger import Logger
 from .models import *  # pylint: disable=wildcard-import
 
-load_dotenv()
-
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-if 'postgres://' in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://')
-
 
 class Database:
-    def __init__(self, logger: Logger, config: Config, uri=DATABASE_URL):
+    def __init__(self, logger: Logger, config: Config, uri="sqlite:///data/crypto_trading.db"):
         self.logger = logger
         self.config = config
         self.engine = create_engine(uri)
@@ -181,14 +173,14 @@ class Database:
                 session.query(CoinValue).group_by(CoinValue.coin_id, func.strftime("%H", CoinValue.datetime)).all()
             )
             for entry in hourly_entries:
-                entry.interval = Interval.HOURLY.value
+                entry.interval = Interval.HOURLY
 
             # Sets the first entry for each coin for each day as 'daily'
             daily_entries: List[CoinValue] = (
                 session.query(CoinValue).group_by(CoinValue.coin_id, func.date(CoinValue.datetime)).all()
             )
             for entry in daily_entries:
-                entry.interval = Interval.DAILY.value
+                entry.interval = Interval.DAILY
 
             # Sets the first entry for each coin for each month as 'weekly'
             # (Sunday is the start of the week)
@@ -196,25 +188,25 @@ class Database:
                 session.query(CoinValue).group_by(CoinValue.coin_id, func.strftime("%Y-%W", CoinValue.datetime)).all()
             )
             for entry in weekly_entries:
-                entry.interval = Interval.WEEKLY.value
+                entry.interval = Interval.WEEKLY
 
             # The last 24 hours worth of minutely entries will be kept, so
             # count(coins) * 1440 entries
             time_diff = datetime.now() - timedelta(hours=24)
             session.query(CoinValue).filter(
-                CoinValue.interval == Interval.MINUTELY.value, CoinValue.datetime < time_diff
+                CoinValue.interval == Interval.MINUTELY, CoinValue.datetime < time_diff
             ).delete()
 
             # The last 28 days worth of hourly entries will be kept, so count(coins) * 672 entries
             time_diff = datetime.now() - timedelta(days=28)
             session.query(CoinValue).filter(
-                CoinValue.interval == Interval.HOURLY.value, CoinValue.datetime < time_diff
+                CoinValue.interval == Interval.HOURLY, CoinValue.datetime < time_diff
             ).delete()
 
             # The last years worth of daily entries will be kept, so count(coins) * 365 entries
             time_diff = datetime.now() - timedelta(days=365)
             session.query(CoinValue).filter(
-                CoinValue.interval == Interval.DAILY.value, CoinValue.datetime < time_diff
+                CoinValue.interval == Interval.DAILY, CoinValue.datetime < time_diff
             ).delete()
 
             # All weekly entries will be kept forever
